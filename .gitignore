@@ -1,0 +1,44 @@
+# Byte-compiled files
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+env/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# IDE or editor files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Environment variables file
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Model files
+*.pt
+*.pth
+
+# Shell scripts
+# jobs/detection/*.sh
+# jobs/classification/*.sh
+
+# Jobs
+# jobs/
+
+# Eggs
+*.egg*
+
+# Testing
+.mypy_cache
+.pytest_cache
+.tox
+.coverage
