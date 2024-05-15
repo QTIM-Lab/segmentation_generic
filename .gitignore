@@ -8,6 +8,7 @@ env/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
+notebooks/
 
 # IDE or editor files
 .vscode/
@@ -42,3 +43,6 @@ Thumbs.db
 .pytest_cache
 .tox
 .coverage
+
+# Weights and biases
+wandb/
