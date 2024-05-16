@@ -46,3 +46,7 @@ Thumbs.db
 
 # Weights and biases
 wandb/
+
+# Other
+src/segmentation/mask2former/run/yamls/system
+scripts/run
