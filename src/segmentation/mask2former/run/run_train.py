@@ -17,6 +17,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Segmentation")
     parser.add_argument('--train_yaml', type=str, required=True, help="Path to the train input file")
     parser.add_argument('--system_yaml', type=str, required=True, help="Path to the system input file")
+    parser.add_argument('--gpu_id', type=int, default=0, help="Which GPU to run on (distributed not available yet)")
     parser.add_argument('--verbose', action='store_true', help="Increase output verbosity")
 
     return parser.parse_args()
@@ -25,10 +26,6 @@ def parse_args():
 def train_model(config=None):
     with wandb.init():
         config = wandb.config
-
-        # Initialize Callbacks
-        early_stop_callback = pl.callbacks.EarlyStopping(monitor=config.early_stopping_monitor, patience=config.patience)
-        checkpoint_callback = pl.callbacks.ModelCheckpoint()
 
         # Initialize Preprocessor
         preprocess = MaskFormerImageProcessor(ignore_index=0, do_reduce_labels=False, do_resize=False, do_rescale=False, do_normalize=False)
@@ -45,8 +42,14 @@ def train_model(config=None):
             val_transform=val_transform,
             preprocess=preprocess
         )
-
+        # and first n batches for callback function that needs them
         first_n_batches = get_first_n_batches(input_dataloader=val_dataloader, n=5)
+
+        # Initialize Callbacks
+        early_stop_callback = pl.callbacks.EarlyStopping(monitor=config.early_stopping_monitor, patience=config.patience)
+        segmentation_callback = SegmentationPredictionLogger(first_n_batches, preprocessor=preprocess)
+        checkpoint_callback = pl.callbacks.ModelCheckpoint()
+        lr_monitor = pl.callbacks.LearningRateMonitor(logging_interval='epoch')
 
         # Initialize model
         model = SegmentationMask2Former(
@@ -74,8 +77,8 @@ def train_model(config=None):
         trainer = pl.Trainer(
             max_epochs=config.max_epochs,
             logger=wandb_logger,
-            callbacks=[early_stop_callback, SegmentationPredictionLogger(first_n_batches, preprocessor=preprocess), checkpoint_callback],
-            devices=1,
+            callbacks=[early_stop_callback, segmentation_callback, checkpoint_callback, lr_monitor],
+            devices=[config.gpu_id],
             accelerator='gpu',
             log_every_n_steps=config.log_every_n_steps,
             accumulate_grad_batches=config.batch_size//config.gpu_max_batch_size,
@@ -96,6 +99,7 @@ if __name__ == '__main__':
     args = parse_args()
     train_yaml = args.train_yaml
     system_yaml = args.system_yaml
+    gpu_id = args.gpu_id
 
     with open(train_yaml, 'r') as file:
         train_params = yaml.safe_load(file)
@@ -141,6 +145,7 @@ if __name__ == '__main__':
             'output_dir': {'values': [system_params['output_dir']]},
             'num_workers': {'values': [system_params['num_workers']]},
             'gpu_max_batch_size': {'values': [system_params['gpu_max_batch_size']]},
+            'gpu_id': {'values': [gpu_id]}
         },
     }
 

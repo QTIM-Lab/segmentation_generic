@@ -138,7 +138,7 @@ class SegmentationMask2Former(pl.LightningModule):
             scheduler = torch.optim.lr_scheduler.CyclicLR(
                 optimizer,
                 base_lr=self.learning_rate/25,
-                max_lr=self.learning_rate
+                max_lr=self.learning_rate*25
             )
         else:
             return optimizer
