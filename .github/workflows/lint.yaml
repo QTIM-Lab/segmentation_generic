@@ -30,7 +30,7 @@ jobs:
 
       - name: Install types for mypy
         run: |
-          echo y | mypy --install-types
+          pip install types-PyYAML
 
       - name: Run flake8
         if: always()
