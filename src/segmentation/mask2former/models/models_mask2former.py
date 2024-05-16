@@ -74,9 +74,18 @@ class SegmentationMask2Former(pl.LightningModule):
             target_sizes=target_sizes
         )
 
+        # Get the prediction segmentation maps into proper valued format
+        predicted_segmentation_maps_np = []
+        # Iterate over the list and modify each array
+        for arr in predicted_segmentation_maps:
+            arr = arr.cpu().numpy()
+            arr[arr <= 1] = 0
+            arr[arr == 2] = 1
+            predicted_segmentation_maps_np.append(arr)
+
         # Get ground truth segmentations from mask labels
         # mask_labels = (b, n_classes, h, w) with 1s for classes, we want -> (b, h, w) with classes as pixel values, offset by 1
-        ground_truth_segmentation_maps = get_pixel_mask(mask_labels.cpu().numpy(), class_offset=1)
+        ground_truth_segmentation_maps = get_pixel_mask(mask_labels.cpu().numpy(), class_offset=0)
 
         # Calculate mean IoU between classes (background and GA)
         # Ideally would only do for GA, but other class takes up ignore index,
@@ -85,7 +94,7 @@ class SegmentationMask2Former(pl.LightningModule):
             num_labels=len(self.id2label),
             ignore_index=0,
             references=ground_truth_segmentation_maps,
-            predictions=predicted_segmentation_maps
+            predictions=predicted_segmentation_maps_np
         )['mean_iou']
 
         return loss, mean_iou

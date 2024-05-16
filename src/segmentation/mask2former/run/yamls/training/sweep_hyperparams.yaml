@@ -5,7 +5,7 @@ wb_sweepname: 'first_sweep'
 sweep_method: 'random'
 sweep_goal: 'minimize'
 sweep_metric_name: 'validation_loss'
-sweep_count: 3
+sweep_count: 100
 # Hyperparams (formatted)
 batch_size: {'values': [8, 16, 24, 32, 40, 48, 56, 64, 72, 80]}
 lr: {'max': 0.0007, 'min': 0.000007, 'distribution': 'log_uniform'}

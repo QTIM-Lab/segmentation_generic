@@ -30,9 +30,10 @@ jobs:
 
       - name: Install types for mypy
         run: |
-          mypy --install-types --yes
+          echo y | mypy --install-types
 
       - name: Run flake8
+        if: always()
         run: |
           flake8 src
 
