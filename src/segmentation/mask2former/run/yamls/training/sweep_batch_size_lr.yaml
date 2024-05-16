@@ -1,5 +1,5 @@
 # Info
-wb_project: 'ga-sweep-batchsize-lr'
+wb_project: 'scott-geographic-atrophy-segmentation-sweep'
 wb_sweepname: 'first_sweep'
 # Sweep type
 sweep_method: 'random'
@@ -7,7 +7,7 @@ sweep_goal: 'minimize'
 sweep_metric_name: 'validation_loss'
 sweep_count: 3
 # Hyperparams (formatted)
-batch_size: {'values': [4, 8, 16, 24, 32]}
+batch_size: {'values': [8, 16, 24, 32, 40, 48, 56, 64, 72, 80]}
 lr: {'max': 0.0007, 'min': 0.000007, 'distribution': 'log_uniform'}
 grad_clip_val: {'max': 3.0, 'min': 0.1, 'distribution': 'uniform'}
 augmentations: {'values': ['/home/kindersc/repos/segmentation_generic/src/segmentation/mask2former/run/yamls/augmentations/standard_augs.yaml']}
