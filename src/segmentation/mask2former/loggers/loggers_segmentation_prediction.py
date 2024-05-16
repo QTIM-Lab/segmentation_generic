@@ -78,7 +78,7 @@ class SegmentationPredictionLogger(pl.callbacks.Callback):
             }
 
             # get pixel masks (b,h,w) from original mask (b,n_classes,h,w)
-            pixel_masks_np = get_pixel_mask(masks.cpu().numpy())
+            pixel_masks_np = get_pixel_mask(masks).cpu().numpy()
 
             # log prediction and ground truth segmentations for images in batch
             trainer.logger.experiment.log({

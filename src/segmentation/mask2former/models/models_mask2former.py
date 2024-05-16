@@ -1,8 +1,7 @@
 import lightning.pytorch as pl
 import torch
 from transformers import Mask2FormerForUniversalSegmentation
-import evaluate
-import time
+import torchmetrics
 from typing import Optional
 
 from src.segmentation.mask2former.utils.utils_logging import get_pixel_mask
@@ -43,7 +42,8 @@ class SegmentationMask2Former(pl.LightningModule):
         self.preprocessor = preprocessor
 
         # experiment id should be a unique string value for the experiment. can use the output folders name
-        self.metric = evaluate.load('mean_iou', experiment_id=str(time.time()))
+        # self.metric = evaluate.load('mean_iou', experiment_id=str(time.time()))
+        self.metric = torchmetrics.classification.BinaryJaccardIndex()
 
     # will be used during inference
     def forward(self, pixel_values, mask_labels=None, class_labels=None):
@@ -75,34 +75,23 @@ class SegmentationMask2Former(pl.LightningModule):
         )
 
         # Get the prediction segmentation maps into proper valued format
-        predicted_segmentation_maps_np = []
-        # Iterate over the list and modify each array
-        for arr in predicted_segmentation_maps:
-            arr = arr.cpu().numpy()
-            arr[arr <= 1] = 0
-            arr[arr == 2] = 1
-            predicted_segmentation_maps_np.append(arr)
+        predicted_segmentation_maps_tensor = torch.stack(predicted_segmentation_maps)
+        predicted_segmentation_maps_tensor[predicted_segmentation_maps_tensor <= 1] = 0
+        predicted_segmentation_maps_tensor[predicted_segmentation_maps_tensor == 2] = 1
 
         # Get ground truth segmentations from mask labels
         # mask_labels = (b, n_classes, h, w) with 1s for classes, we want -> (b, h, w) with classes as pixel values, offset by 1
-        ground_truth_segmentation_maps = get_pixel_mask(mask_labels.cpu().numpy(), class_offset=0)
+        gt_seg_maps_tensor = get_pixel_mask(mask_labels, class_offset=0)
 
-        # Calculate mean IoU between classes (background and GA)
-        # Ideally would only do for GA, but other class takes up ignore index,
-        # and for reporting can fix, for this is mathematically same?
-        mean_iou = self.metric.compute(
-            num_labels=len(self.id2label),
-            ignore_index=0,
-            references=ground_truth_segmentation_maps,
-            predictions=predicted_segmentation_maps_np
-        )['mean_iou']
+        # Calculate mean IoU for just GA (binary on that class)
+        mean_iou = self.metric(predicted_segmentation_maps_tensor, gt_seg_maps_tensor)
 
         return loss, mean_iou
 
     def training_step(self, batch, batch_idx):
         loss, mean_iou = self.common_step(batch, batch_idx)
-        self.log('train_loss', loss, on_step=True, on_epoch=True, logger=True)
-        self.log('train_acc', mean_iou, on_step=True, on_epoch=True, logger=True)
+        self.log('train_loss', loss, on_step=False, on_epoch=True, logger=True)
+        self.log('train_acc', mean_iou, on_step=False, on_epoch=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):

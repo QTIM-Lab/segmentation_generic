@@ -1,4 +1,4 @@
-import numpy as np
+import torch
 
 
 def get_pixel_mask(label_mask, class_offset=0):
@@ -7,8 +7,12 @@ def get_pixel_mask(label_mask, class_offset=0):
 
     Takes a (batch, n_classes, height, width) shaped array and returns a (batch, height, width) with proper values
     '''
-    # Create a new NumPy array with the desired shape (batch_size, height, width)
-    new_mask = np.zeros((label_mask.shape[0], label_mask.shape[2], label_mask.shape[3]), dtype=np.uint8)
+    # Convert the input tensor to a PyTorch tensor if it's not already
+    if not isinstance(label_mask, torch.Tensor):
+        label_mask = torch.from_numpy(label_mask)
+
+    # Create a new tensor with the desired shape (batch_size, height, width)
+    new_mask = torch.zeros(label_mask.shape[0], label_mask.shape[2], label_mask.shape[3], device=label_mask.device, dtype=torch.uint8)
 
     # Iterate over the batch dimension
     for batch in range(label_mask.shape[0]):
