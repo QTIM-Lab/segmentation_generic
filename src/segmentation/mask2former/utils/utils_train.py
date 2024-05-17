@@ -4,6 +4,29 @@ from torch.utils.data import DataLoader
 from src.segmentation.mask2former.data_modules.datasets_train import ImageSegmentationDataset
 
 
+# Maybe should be utils_data?
+def get_dataloader_from_csv(csv_path, csv_img_path_col, csv_label_path_col, image_root_dir, label_root_dir, 
+        transform, preprocessor, batch_size, num_workers):
+    # image_root_dir = data_root_dir + data_subfolder
+
+    data_df = pd.read_csv(csv_path)
+
+    image_paths = data_df[csv_img_path_col].tolist()
+    mask_paths = data_df[csv_label_path_col].tolist()
+
+    data_set = ImageSegmentationDataset(
+        image_paths,
+        mask_paths,
+        transform=transform,
+        preprocess=preprocessor,
+        image_root_dir=image_root_dir,
+        label_root_dir=label_root_dir
+    )
+
+    data_loader = DataLoader(data_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+    return data_loader
+
 def get_dataloaders(config, train_transform, val_transform, preprocess):
     data_root_dir = config.data_dir
 

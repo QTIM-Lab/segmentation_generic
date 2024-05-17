@@ -8,7 +8,7 @@ env/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
-notebooks/
+notebooks/internal
 
 # IDE or editor files
 .vscode/

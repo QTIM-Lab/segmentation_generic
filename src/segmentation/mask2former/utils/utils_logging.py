@@ -21,3 +21,15 @@ def get_pixel_mask(label_mask, class_offset=0):
         new_mask[batch][label_mask[batch, 1] == 1] = 1 + class_offset
 
     return new_mask
+
+def unnormalize_image(normalized_image, means, stds):
+    # Ensure the mean and std arrays are broadcastable to the shape of the image
+    if means.ndim == 1:
+        means = means.reshape(-1, 1, 1)
+    if stds.ndim == 1:
+        stds = stds.reshape(-1, 1, 1)
+
+    # Unnormalize the image
+    original_image = (normalized_image * stds) + means
+
+    return original_image.transpose(1, 2, 0)

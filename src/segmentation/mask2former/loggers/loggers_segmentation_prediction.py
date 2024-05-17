@@ -2,7 +2,7 @@ import wandb
 import lightning.pytorch as pl
 import numpy as np
 
-from src.segmentation.mask2former.utils.utils_logging import get_pixel_mask
+from src.segmentation.mask2former.utils.utils_logging import get_pixel_mask, unnormalize_image
 
 
 class SegmentationPredictionLogger(pl.callbacks.Callback):
@@ -29,17 +29,6 @@ class SegmentationPredictionLogger(pl.callbacks.Callback):
 
         return new_mask
 
-    def unnormalize_image(self, normalized_image, means, stds):
-        # Ensure the mean and std arrays are broadcastable to the shape of the image
-        if means.ndim == 1:
-            means = means.reshape(-1, 1, 1)
-        if stds.ndim == 1:
-            stds = stds.reshape(-1, 1, 1)
-
-        # Unnormalize the image
-        original_image = (normalized_image * stds) + means
-
-        return original_image.transpose(1, 2, 0)
 
     def on_validation_epoch_end(self, trainer, pl_module):
         for sample in self.val_samples:
@@ -83,7 +72,7 @@ class SegmentationPredictionLogger(pl.callbacks.Callback):
             # log prediction and ground truth segmentations for images in batch
             trainer.logger.experiment.log({
                 "examples": [
-                    wandb.Image(self.unnormalize_image(img.cpu().numpy(), self.img_mean, self.img_std), caption="iou:", masks={
+                    wandb.Image(unnormalize_image(img.cpu().numpy(), self.img_mean, self.img_std), caption="iou:", masks={
                         "predictions": {
                             "mask_data": pred,
                             "class_labels": class_lbls
