@@ -22,6 +22,7 @@ def get_pixel_mask(label_mask, class_offset=0):
 
     return new_mask
 
+
 def unnormalize_image(normalized_image, means, stds):
     # Ensure the mean and std arrays are broadcastable to the shape of the image
     if means.ndim == 1:

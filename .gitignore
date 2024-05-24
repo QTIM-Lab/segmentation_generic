@@ -8,7 +8,7 @@ env/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
-notebooks/internal
+notebooks/*
 
 # IDE or editor files
 .vscode/
@@ -48,5 +48,5 @@ Thumbs.db
 wandb/
 
 # Other
-src/segmentation/mask2former/run/yamls/system
+yamls/
 scripts/run

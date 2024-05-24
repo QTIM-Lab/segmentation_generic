@@ -34,7 +34,7 @@ def get_train_transform(aug_params):
                 ),
             ], p=aug_params['spatial_level_augs']),
             # Because pixel level augs like blur can be sensitive to size
-            A.LongestMaxSize(max_size=aug_params['dataset_min_size'], interpolation=cv2.INTER_AREA),
+            A.LongestMaxSize(max_size=aug_params['output_size'], interpolation=cv2.INTER_AREA),
             # Pixel level
             A.OneOf([  # Select one pixel-level transform
                 A.ColorJitter(
@@ -94,7 +94,7 @@ def get_val_transform(aug_params):
     val_transform = A.Compose([
         A.Sequential([
             # Because pixel level augs like blur can be sensitive to size
-            A.LongestMaxSize(max_size=aug_params['dataset_min_size'], interpolation=cv2.INTER_AREA),
+            A.LongestMaxSize(max_size=aug_params['output_size'], interpolation=cv2.INTER_AREA),
             # Dont apply augs to paddings, because wont at test time, so pad after
             A.PadIfNeeded(min_height=aug_params['output_size'], min_width=aug_params['output_size'], border_mode=0, value=0),
             # But do apply normalization to paddings, so model doesnt think it is different than normal black

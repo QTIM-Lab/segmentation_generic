@@ -1,26 +1,17 @@
 import os
 from PIL import Image
 import numpy as np
-from torch.utils.data import Dataset
-from typing import Tuple, Any
-import torch
+
+from src.segmentation.generic.data_modules.datasets_generic import GenericDataset
 
 
-class ImageSegmentationDataset(Dataset[Tuple[torch.Tensor, torch.Tensor, np.ndarray[Any, Any], np.ndarray[Any, Any]]]):
-    """Image segmentation dataset."""
+class Mask2FormerDataset(GenericDataset):
+    """
+    Mask2Former dataset.
+    """
 
     def __init__(self, images, masks, transform, preprocess, image_root_dir, label_root_dir):
-        """
-        Args:
-            dataset
-        """
-        self.images = images
-        self.masks = masks
-        self.transform = transform
-        self.image_root_dir = image_root_dir
-        self.preprocessor = preprocess
-        # TODO: fix naming conventions
-        self.mask_root_dir = label_root_dir
+        super().__init__(images, masks, transform, preprocess, image_root_dir, label_root_dir)
 
     def __len__(self):
         return len(self.images)

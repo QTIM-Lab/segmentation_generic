@@ -2,10 +2,10 @@ import wandb
 import lightning.pytorch as pl
 import numpy as np
 
-from src.segmentation.mask2former.utils.utils_logging import get_pixel_mask, unnormalize_image
+from src.segmentation.generic.utils.utils_logging import get_pixel_mask, unnormalize_image
 
 
-class SegmentationPredictionLogger(pl.callbacks.Callback):
+class SegmentationPredictionMask2FormerLogger(pl.callbacks.Callback):
     def __init__(self, val_samples, preprocessor=None, img_mean=[0.5, 0.5, 0.5], img_std=[0.15, 0.15, 0.15], num_samples=10):
         super().__init__()
         self.num_samples = num_samples
@@ -29,7 +29,6 @@ class SegmentationPredictionLogger(pl.callbacks.Callback):
 
         return new_mask
 
-
     def on_validation_epoch_end(self, trainer, pl_module):
         for sample in self.val_samples:
             imgs, masks, class_labels = sample
@@ -43,7 +42,7 @@ class SegmentationPredictionLogger(pl.callbacks.Callback):
             target_sizes = [(image.shape[1], image.shape[2]) for image in imgs]
 
             # Infer
-            outputs = pl_module(pixel_values=imgs)
+            outputs = pl_module(sample)
 
             # Get segmentation output
             predicted_segmentation_maps = self.preprocessor.post_process_semantic_segmentation(

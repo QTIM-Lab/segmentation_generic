@@ -1,26 +1,16 @@
-import lightning.pytorch as pl
 import torch
 from transformers import Mask2FormerForUniversalSegmentation
-import torchmetrics
-from typing import Optional
 
-from src.segmentation.mask2former.utils.utils_logging import get_pixel_mask
+from src.segmentation.generic.utils.utils_logging import get_pixel_mask
+from src.segmentation.generic.models.models_generic import GenericModel
 
 
-class SegmentationMask2Former(pl.LightningModule):
+class SegmentationMask2Former(GenericModel):
     '''
     Credit to Weights and Biases
     '''
     def __init__(self, configs, num_classes, preprocessor):
-        super().__init__()
-
-        # log hyperparameters
-        self.save_hyperparameters()
-        self.learning_rate = configs['lr']
-        self.optimizer_name = configs['optimizer_name']
-        self.scheduler_name = configs['scheduler_name']
-        self.adamw_weight_decay = configs['adamw_weight_decay']
-        self.sgd_momentum = configs['sgd_momentum']
+        super().__init__(configs=configs)
 
         # for classes
         # (all need to have the 0 unlabeled and 1 background I think...)
@@ -41,28 +31,21 @@ class SegmentationMask2Former(pl.LightningModule):
         # Create an empty preprocessor
         self.preprocessor = preprocessor
 
-        # experiment id should be a unique string value for the experiment. can use the output folders name
-        # self.metric = evaluate.load('mean_iou', experiment_id=str(time.time()))
-        self.metric = torchmetrics.classification.BinaryJaccardIndex()
-
     # will be used during inference
-    def forward(self, pixel_values, mask_labels=None, class_labels=None):
-        x = self.model(
+    def forward(self, x):
+        pixel_values, mask_labels, class_labels = x
+        output = self.model(
             pixel_values=pixel_values,
             mask_labels=mask_labels,
             class_labels=class_labels,
         )
-        return x
+        return output
 
     def common_step(self, batch, batch_idx):
         pixel_values, mask_labels, class_labels = batch
 
         # Forward pass
-        outputs = self(
-            pixel_values=pixel_values,
-            mask_labels=mask_labels,
-            class_labels=class_labels,
-        )
+        outputs = self(batch)
 
         # Backward propagation
         loss = outputs.loss
@@ -87,60 +70,3 @@ class SegmentationMask2Former(pl.LightningModule):
         mean_iou = self.metric(predicted_segmentation_maps_tensor, gt_seg_maps_tensor)
 
         return loss, mean_iou
-
-    def training_step(self, batch, batch_idx):
-        loss, mean_iou = self.common_step(batch, batch_idx)
-        self.log('train_loss', loss, on_step=False, on_epoch=True, logger=True)
-        self.log('train_acc', mean_iou, on_step=False, on_epoch=True, logger=True)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        loss, mean_iou = self.common_step(batch, batch_idx)
-        self.log('val_loss', loss, prog_bar=True)
-        self.log('val_acc', mean_iou, prog_bar=True)
-        return loss
-
-    def test_step(self, batch, batch_idx):
-        loss, mean_iou = self.common_step(batch, batch_idx)
-        self.log('test_loss', loss, prog_bar=True)
-        self.log('test_acc', mean_iou, prog_bar=True)
-        return loss
-
-    def configure_optimizers(self):
-        # Optimizer
-        # optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        optimizer: torch.optim.Optimizer  # Type hint for optimizer
-        if self.optimizer_name == 'adam':
-            # Default adam settings, only experiment with AdamW decay
-            optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=0)
-        elif self.optimizer_name == 'adamw':
-            # AdamW uses weight decay
-            optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=self.adamw_weight_decay)
-        elif self.optimizer_name == 'sgd':
-            # Define an SGD optimizer with momentum
-            optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, momentum=self.sgd_momentum)
-
-        # Scheduler
-        scheduler: Optional[torch.optim.lr_scheduler.LRScheduler] = None
-        if self.scheduler_name == 'exponential_decay':
-            # Exponential decay scheduler
-            scheduler = torch.optim.lr_scheduler.ExponentialLR(
-                optimizer,
-                gamma=0.95,  # Decay rate
-            )
-        elif self.scheduler_name == 'cosine_annealing':
-            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-                optimizer,
-                T_max=25,  # Maximum number of iterations
-                eta_min=self.learning_rate/50,  # Minimum learning rate
-            )
-        elif self.scheduler_name == 'cyclic_lr':
-            scheduler = torch.optim.lr_scheduler.CyclicLR(
-                optimizer,
-                base_lr=self.learning_rate/25,
-                max_lr=self.learning_rate*25
-            )
-        else:
-            return optimizer
-
-        return [optimizer], [scheduler]
