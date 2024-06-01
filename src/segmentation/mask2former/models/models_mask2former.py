@@ -36,7 +36,7 @@ class SegmentationMask2Former(GenericModel):
 
     # will be used during inference
     def forward(self, x):
-        pixel_values, mask_labels, class_labels = x
+        pixel_values, mask_labels, class_labels, original_sizes, filenames = x
         output = self.model(
             pixel_values=pixel_values,
             mask_labels=mask_labels,
@@ -45,7 +45,7 @@ class SegmentationMask2Former(GenericModel):
         return output
 
     def common_step(self, batch, batch_idx):
-        pixel_values, mask_labels, class_labels = batch
+        pixel_values, mask_labels, class_labels, original_sizes, filenames = batch
 
         # Forward pass
         outputs = self(batch)

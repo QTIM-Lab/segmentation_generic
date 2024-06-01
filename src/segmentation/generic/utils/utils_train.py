@@ -44,7 +44,7 @@ def get_dataloader_from_csv(model_arch, csv_path, csv_img_path_col, csv_label_pa
     data_df = pd.read_csv(csv_path)
 
     image_paths = data_df[csv_img_path_col].tolist()
-    mask_paths = data_df[csv_label_path_col].tolist()
+    mask_paths = data_df[csv_label_path_col].tolist() if csv_label_path_col is not None else None
 
     data_set: Dataset[Tuple[torch.Tensor, torch.Tensor, np.ndarray[Any, Any], np.ndarray[Any, Any]]]
     if model_arch == 'mask2former':
