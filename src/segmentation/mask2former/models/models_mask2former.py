@@ -1,5 +1,6 @@
 import torch
 from transformers import Mask2FormerForUniversalSegmentation
+from monai.losses.dice import DiceLoss
 
 from src.segmentation.generic.utils.utils_logging import get_pixel_mask
 from src.segmentation.generic.models.models_generic import GenericModel
@@ -30,6 +31,8 @@ class SegmentationMask2Former(GenericModel):
 
         # Create an empty preprocessor
         self.preprocessor = preprocessor
+
+        self.metric = DiceLoss(sigmoid=False, squared_pred=True, reduction="mean")
 
     # will be used during inference
     def forward(self, x):
@@ -67,6 +70,6 @@ class SegmentationMask2Former(GenericModel):
         gt_seg_maps_tensor = get_pixel_mask(mask_labels, class_offset=0)
 
         # Calculate mean IoU for just GA (binary on that class)
-        mean_iou = self.metric(predicted_segmentation_maps_tensor, gt_seg_maps_tensor)
+        mean_dice = 1 - self.metric(predicted_segmentation_maps_tensor, gt_seg_maps_tensor)
 
-        return loss, mean_iou
+        return loss, mean_dice
