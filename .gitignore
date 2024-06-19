@@ -48,5 +48,5 @@ Thumbs.db
 wandb/
 
 # Other
-yamls/
-scripts/run
+# yamls/
+# scripts/run

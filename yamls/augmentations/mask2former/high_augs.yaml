@@ -1,0 +1,16 @@
+output_size: 512
+horizontal_flip_augs: 0.5
+spatial_level_augs: 0.9
+rotation_augs: [30, 0.75]
+crop_p_augs: [0.1, 0.25]
+jitter_augs: [0.5, 0.5, 0.0, 0.0, 0.7]
+sharpen_augs: [11, 21, 0.1]
+gauss_blur_augs: [11, 15, 0.05]
+defocus_augs: [7, 9, 0.05]
+motion_blur_augs: [3, 7, 0.0]
+zoom_blur_augs: [1.07, 1.1, 0.01, 0.03, 0.0]
+downscale_augs: [0.25, 0.5, 0.05]
+compression_augs: [25, 50, 0.05]
+pixel_level_augs: 0.9
+dataset_mean: [0.5, 0.5, 0.5]
+dataset_std: [0.15, 0.15, 0.15]

@@ -1,0 +1,31 @@
+# Info
+wb_project: 'miccai_dev'
+wb_sweepname: 'bens_trials'
+# Sweep type
+sweep_method: 'random'
+sweep_goal: 'minimize'
+sweep_metric_name: 'validation_loss'
+sweep_count: 3
+# Hyperparams (formatted)
+# Still need to specify the dataset frac split to use...
+batch_size: {'values': [8]}
+# lr: {'max': 0.00007, 'min': 0.000005, 'distribution': 'log_uniform'}
+lr: {'values': [0.00003]}
+grad_clip_val: {'max': 3.0, 'min': 0.01, 'distribution': 'uniform'}
+augmentations: {
+  'values': [
+    '/home/kindersc/repos/segmentation_generic/yamls/augmentations/medsam/low_augs.yaml',
+    '/home/kindersc/repos/segmentation_generic/yamls/augmentations/medsam/medium_augs.yaml',
+    '/home/kindersc/repos/segmentation_generic/yamls/augmentations/medsam/high_augs.yaml'
+  ]
+}
+patience: {'values': [10]}
+max_epochs: {'values': [500]}
+early_stopping_monitor: {'values': ['val_loss']}
+optimizer_name: {'values': ['adam', 'adamw']}
+scheduler_name: {'values': ['exponential_decay', 'cosine_annealing', 'cyclic_lr', 'none']}
+adamw_weight_decay: {'max': 0.01, 'min': 0.0000001, 'distribution': 'log_uniform'}
+sgd_momentum: {'max': 0.99, 'min': 0.01, 'distribution': 'log_uniform'}
+log_every_n_steps: {'values': [10]}
+# Frac num
+frac_num: {'values': [20]}
