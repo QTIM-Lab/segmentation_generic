@@ -27,7 +27,10 @@ def parse_args():
 
 def train_model(config=None):
     with wandb.init():
-        config = wandb.config
+        config = wandb.config  # I think this is {...parameters}
+
+        print('using: ', config.frac_num)
+        # config.method
 
         # Initialize Augmentations
         with open(config.augmentations, 'r') as file:
@@ -42,7 +45,8 @@ def train_model(config=None):
             config=config,
             train_transform=train_transform,
             val_transform=val_transform,
-            preprocess=preprocess
+            preprocess=preprocess,
+            frac_num=config.frac_num
         )
 
         # and first n batches for callback function that needs them

@@ -70,15 +70,16 @@ def get_dataloader_from_csv(model_arch, csv_path, csv_img_path_col, csv_label_pa
     return data_loader
 
 
-def get_dataloaders(config, train_transform, val_transform, preprocess):
+def get_dataloaders(config, train_transform, val_transform, preprocess, frac_num=100):
     data_root_dir = config.data_dir
 
     # get paths
     image_root_dir = data_root_dir + 'images'
     label_root_dir = data_root_dir + 'labels'
-    train_csv = data_root_dir + 'csvs/train.csv'
-    val_csv = data_root_dir + 'csvs/val.csv'
-    test_csv = data_root_dir + 'csvs/test.csv'
+    # get csvs
+    train_csv = data_root_dir + f'csvs/miccai_nj/train_{frac_num}.csv'
+    val_csv = data_root_dir + f'csvs/miccai_nj/val_{frac_num}.csv'
+    test_csv = data_root_dir + 'csvs/miccai_nj/test_bb.csv'
 
     # get column names
     # TODO: fix hardcode?
@@ -170,13 +171,16 @@ def get_sweep_config(model_arch, train_params, system_params, gpu_id):
         'parameters': {
             # Parameters (Model arch)
             'model_arch': {'values': [model_arch]},
+            # Frac num
+            'frac_num': train_params['frac_num'],
             # Hyperparameters (ones with log need manual setting)
             'batch_size': train_params['batch_size'],
-            'lr': {
-                'max': math.log(train_params['lr']['max']),
-                'min': math.log(train_params['lr']['min']),
-                'distribution': train_params['lr']['distribution']
-            },
+            # 'lr': {
+            #     'max': math.log(train_params['lr']['max']),
+            #     'min': math.log(train_params['lr']['min']),
+            #     'distribution': train_params['lr']['distribution']
+            # },
+            'lr': train_params['lr'],
             'grad_clip_val': train_params['grad_clip_val'],
             'augmentations': train_params['augmentations'],
             'patience': train_params['patience'],
@@ -200,6 +204,6 @@ def get_sweep_config(model_arch, train_params, system_params, gpu_id):
             'output_dir': {'values': [system_params['output_dir']]},
             'num_workers': {'values': [system_params['num_workers']]},
             'gpu_max_batch_size': {'values': [system_params['gpu_max_batch_size']]},
-            'gpu_id': {'values': [gpu_id]}
+            'gpu_id': {'values': [gpu_id]},
         },
     }
