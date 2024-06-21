@@ -50,3 +50,4 @@ wandb/
 # Other
 # yamls/
 # scripts/run
+lightning_logs/

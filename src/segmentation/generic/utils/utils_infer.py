@@ -14,7 +14,7 @@ from src.segmentation.medsam.models.models_medsam import SegmentationMedSAM
 
 
 def infer_model(config_augmentations_path, holdout_csv_path, weights_path, model_arch, image_root_dir, label_root_dir,
-                gpu_id=0, num_workers=4, csv_img_path_col='image', csv_label_path_col='mask'):
+                gpu_id=0, num_workers=4, label_bbox_option='label', csv_img_path_col='image', csv_label_path_col='mask'):
     device = torch.device(f'cuda:{gpu_id}' if torch.cuda.is_available() else "cpu")
     # # Need for output size etc.
     # config_augmentations = '/home/kindersc/repos/segmentation_generic/yamls/augmentations/medsam/medium_augs.yaml'
@@ -39,7 +39,8 @@ def infer_model(config_augmentations_path, holdout_csv_path, weights_path, model
         transform=val_transform,
         preprocessor=preprocess,
         batch_size=1,
-        num_workers=num_workers
+        num_workers=num_workers,
+        label_bbox_option=label_bbox_option
     )
 
     configs = {
@@ -59,11 +60,12 @@ def infer_model(config_augmentations_path, holdout_csv_path, weights_path, model
     )
 
     trainer = pl.Trainer(
-        devices='auto',
+        # devices='auto',
+        devices=[gpu_id],
         accelerator='gpu',
     )
 
     # Evaluate the model on the test set
-    test_acc = trainer.test(dataloaders=holdout_dataloader)['test_acc']
+    test_acc = trainer.test(model, dataloaders=holdout_dataloader)[0]['test_acc']
 
     return test_acc

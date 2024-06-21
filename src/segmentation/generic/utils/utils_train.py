@@ -40,7 +40,7 @@ def get_model_and_processor(config):
 # TODO: fix
 def get_dataloader_from_csv(model_arch, csv_path, csv_img_path_col, csv_label_path_col,
                             image_root_dir, label_root_dir, transform, preprocessor,
-                            batch_size, num_workers):
+                            batch_size, num_workers, label_bbox_option):
     data_df = pd.read_csv(csv_path)
 
     image_paths = data_df[csv_img_path_col].tolist()
@@ -63,7 +63,8 @@ def get_dataloader_from_csv(model_arch, csv_path, csv_img_path_col, csv_label_pa
             transform=transform,
             preprocess=preprocessor,
             image_root_dir=image_root_dir,
-            label_root_dir=label_root_dir
+            label_root_dir=label_root_dir,
+            label_bbox_option=label_bbox_option
         )
 
     data_loader = DataLoader(data_set, batch_size=batch_size, shuffle=False, num_workers=num_workers)
@@ -77,16 +78,21 @@ def get_dataloaders(config, train_transform, val_transform, preprocess, frac_num
     image_root_dir = data_root_dir + 'images'
     label_root_dir = data_root_dir + 'labels'
     # get csvs
-    train_csv = data_root_dir + f'csvs/miccai_nj/train_{frac_num}.csv'
-    val_csv = data_root_dir + f'csvs/miccai_nj/val_{frac_num}.csv'
-    test_csv = data_root_dir + 'csvs/miccai_nj/test_bb.csv'
+    # train_csv = data_root_dir + f'csvs/miccai_nj/train_{frac_num}.csv'
+    # val_csv = data_root_dir + f'csvs/miccai_nj/val_{frac_num}.csv'
+    # test_csv = data_root_dir + 'csvs/miccai_nj/test_bb.csv'
+    train_csv = data_root_dir + f'csvs/train_{frac_num}.csv'
+    val_csv = data_root_dir + f'csvs/val_{frac_num}.csv'
+    # val_csv = data_root_dir + f'csvs/val_100.csv'
+    test_csv = data_root_dir + 'csvs/test_bb.csv'
 
     # get column names
     # TODO: fix hardcode?
     csv_img_path_col = 'image'
     csv_label_path_col = 'mask'
-
+    # import pdb; pdb.set_trace()
     train_dataloader = get_dataloader_from_csv(
+        # config.label_bbox_option
         model_arch=config.model_arch,
         csv_path=train_csv,
         csv_img_path_col=csv_img_path_col,
@@ -96,7 +102,8 @@ def get_dataloaders(config, train_transform, val_transform, preprocess, frac_num
         transform=train_transform,
         preprocessor=preprocess,
         batch_size=config.gpu_max_batch_size,
-        num_workers=config.num_workers
+        num_workers=config.num_workers,
+        label_bbox_option=config.label_bbox_option
     )
 
     val_dataloader = get_dataloader_from_csv(
@@ -109,7 +116,8 @@ def get_dataloaders(config, train_transform, val_transform, preprocess, frac_num
         transform=val_transform,
         preprocessor=preprocess,
         batch_size=config.gpu_max_batch_size,
-        num_workers=config.num_workers//2
+        num_workers=config.num_workers//2,
+        label_bbox_option=config.label_bbox_option
     )
 
     test_dataloader = get_dataloader_from_csv(
@@ -122,7 +130,8 @@ def get_dataloaders(config, train_transform, val_transform, preprocess, frac_num
         transform=val_transform,
         preprocessor=preprocess,
         batch_size=config.gpu_max_batch_size,
-        num_workers=config.num_workers//2
+        num_workers=config.num_workers//2,
+        label_bbox_option=config.label_bbox_option
     )
 
     return train_dataloader, val_dataloader, test_dataloader
@@ -205,5 +214,6 @@ def get_sweep_config(model_arch, train_params, system_params, gpu_id):
             'num_workers': {'values': [system_params['num_workers']]},
             'gpu_max_batch_size': {'values': [system_params['gpu_max_batch_size']]},
             'gpu_id': {'values': [gpu_id]},
+            'label_bbox_option': train_params['label_bbox_option'],
         },
     }

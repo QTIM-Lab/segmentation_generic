@@ -11,8 +11,10 @@ class MedSAMDataset(GenericDataset):
     Mask2Former dataset.
     """
 
-    def __init__(self, images, masks, transform, preprocess, image_root_dir, label_root_dir):
+    def __init__(self, images, masks, transform, preprocess, image_root_dir, label_root_dir, label_bbox_option="label"):
         super().__init__(images, masks, transform, preprocess, image_root_dir, label_root_dir)
+        self.label_bbox_option = label_bbox_option
+
 
     def __len__(self):
         return len(self.images)
@@ -36,7 +38,21 @@ class MedSAMDataset(GenericDataset):
         image = image.transpose(2, 0, 1)
 
         # Get the bounding boxes of the labels
-        input_boxes = [get_label_bbox(mask_label)]
+        
+        if self.label_bbox_option == 'label':
+            print(f"lself.label_bbox_option: {self.label_bbox_option}")
+            input_boxes = [get_label_bbox(mask_label, bbox_shift = 0)] # Label bbox
+        elif self.label_bbox_option == 'image':            
+            print(f"iself.label_bbox_option: {self.label_bbox_option}")
+            input_boxes = [0., 0., float(image.shape[2]), float(image.shape[1])] # Image bbox
+        elif self.label_bbox_option == 'padded_label':   
+            print(f"pself.label_bbox_option: {self.label_bbox_option}")
+            input_boxes = [get_label_bbox(mask_label)] # Label bbox
+        elif self.label_bbox_option == 'yolo':
+            print(f"yself.label_bbox_option: {self.label_bbox_option}")
+            pass
+        else:
+            raise Exception("You didn't specify label type")            
 
         # Get data in way that MedSAM wants
         batched = self.preprocessor(

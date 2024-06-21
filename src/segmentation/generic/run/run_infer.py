@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument('--label_root_dir', type=str, required=True, help="Directory where test labels are stored")
     parser.add_argument('--num_workers', type=int, default=1, help="Number of workers to use")
     parser.add_argument('--gpu_id', type=int, default=0, help="Which GPU to run on (distributed not available yet)")
+    parser.add_argument('--label_bbox_option', type=str, default='label', help="Which bounding box type do you want ['label','image','padded','yolo']")
 
     return parser.parse_args()
 
@@ -42,11 +43,12 @@ if __name__ == '__main__':
     outputs = {}
 
     # Walk through the root directory
-    for root, dirs, files in os.walk(all_models_root_dir):  # iterate over /output_logger/... folder
-        folder_name = os.path.basename(root)
-        for file in files:
+    for dir in os.listdir(all_models_root_dir):  # iterate over /output_logger/... folder
+        root = os.path.join(all_models_root_dir, f"{dir}/wandb-lightning/{dir.split('_')[0]}/checkpoints")
+        for file in os.listdir(root):
             # Check if the file ends with .pt or .ckpt
             if file.endswith('.pt') or file.endswith('.ckpt'):
+                # import pdb; pdb.set_trace()
                 # Print the full path to the file
                 file_path = os.path.join(root, file)
                 print(f"weights file: {file_path}")
@@ -58,10 +60,13 @@ if __name__ == '__main__':
                     image_root_dir=image_root_dir,
                     label_root_dir=label_root_dir,
                     gpu_id=0,
-                    num_workers=4
+                    num_workers=4,
+                    label_bbox_option = args.label_bbox_option
                 )
 
-                outputs[folder_name] = test_val
+                outputs[dir] = test_val
+                print("outputs: ", outputs)
 
     print('output:')
+    import pdb; pdb.set_trace()
     print(outputs)

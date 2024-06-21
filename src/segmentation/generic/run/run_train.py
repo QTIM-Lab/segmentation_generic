@@ -1,3 +1,4 @@
+import os
 import argparse
 import wandb
 import lightning.pytorch as pl
@@ -28,7 +29,6 @@ def parse_args():
 def train_model(config=None):
     with wandb.init():
         config = wandb.config  # I think this is {...parameters}
-
         print('using: ', config.frac_num)
         # config.method
 
@@ -71,7 +71,7 @@ def train_model(config=None):
             project='wandb-lightning',
             job_type='train',
             # log_model='all',
-            save_dir=config.output_dir + wandb_run_id
+            save_dir=os.path.join(config.output_dir, f"{wandb_run_id}_{config.frac_num}")
         )
 
         # log gradients, parameter histogram and model topology

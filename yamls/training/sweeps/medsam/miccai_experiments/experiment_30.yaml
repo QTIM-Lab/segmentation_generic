@@ -1,6 +1,6 @@
 # Info
 wb_project: 'miccai_fractionations'
-wb_sweepname: 'bens_trials_10'
+wb_sweepname: 'bens_trials'
 # Sweep type
 sweep_method: 'random'
 sweep_goal: 'minimize'
@@ -9,8 +9,8 @@ sweep_count: 3
 # Hyperparams (formatted)
 # Still need to specify the dataset frac split to use...
 batch_size: {'values': [8]}
-# lr: {'max': 0.0001, 'min': 0.00000001, 'distribution': 'log_uniform'}
-lr: {'values': [0.00003]}
+# lr: {'max': 0.00007, 'min': 0.000005, 'distribution': 'log_uniform'}
+lr: {'values': [0.00005]}
 grad_clip_val: {'max': 3.0, 'min': 0.01, 'distribution': 'uniform'}
 augmentations: {
   'values': [
@@ -28,6 +28,6 @@ adamw_weight_decay: {'max': 0.01, 'min': 0.0000001, 'distribution': 'log_uniform
 sgd_momentum: {'max': 0.99, 'min': 0.01, 'distribution': 'log_uniform'}
 log_every_n_steps: {'values': [10]}
 # Frac num
-frac_num: {'values': [10]}
+frac_num: {'values': [30]}
 # label options (label, image, padded_label, yolo)
 label_bbox_option: {'values': ['image']}
