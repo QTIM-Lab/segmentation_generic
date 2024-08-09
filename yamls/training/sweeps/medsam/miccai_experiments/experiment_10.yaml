@@ -14,9 +14,9 @@ lr: {'values': [0.00003]}
 grad_clip_val: {'max': 3.0, 'min': 0.01, 'distribution': 'uniform'}
 augmentations: {
   'values': [
-    '/sddata/projects/segmentation_generic/yamls/augmentations/medsam/low_augs.yaml',
-    '/sddata/projects/segmentation_generic/yamls/augmentations/medsam/medium_augs.yaml',
-    '/sddata/projects/segmentation_generic/yamls/augmentations/medsam/high_augs.yaml'
+    '/home/thakuriu/active_learning/segmentation_generic/yamls/augmentations/medsam/low_augs.yaml',
+    '/home/thakuriu/active_learning/segmentation_generic/yamls/augmentations/medsam/medium_augs.yaml',
+    '/home/thakuriu/active_learning/segmentation_generic/yamls/augmentations/medsam/high_augs.yaml'
   ]
 }
 patience: {'values': [10]}

@@ -1,6 +1,7 @@
 import lightning.pytorch as pl
 import torch
 from typing import Optional
+from monai.losses.dice import DiceLoss # import also DiceMetric
 
 
 class GenericModel(pl.LightningModule):
@@ -17,6 +18,9 @@ class GenericModel(pl.LightningModule):
         self.scheduler_name = configs['scheduler_name']
         self.adamw_weight_decay = configs['adamw_weight_decay']
         self.sgd_momentum = configs['sgd_momentum']
+        self.metric = DiceLoss(sigmoid=False, squared_pred=True, reduction="mean")
+        # squared_pred, DiceMetrics vs DiceLoss
+
 
     # will be used during inference
     def forward(self, x):
@@ -25,8 +29,13 @@ class GenericModel(pl.LightningModule):
     def common_step(self, batch, batch_idx):
         loss = 0
         metric_value = 0
+        
 
         return loss, metric_value
+    
+    # def get_probabilities(self, batch, batch_idx)::
+        # prob = 0
+        # return prob
 
     def training_step(self, batch, batch_idx):
         loss, metric_value = self.common_step(batch, batch_idx)

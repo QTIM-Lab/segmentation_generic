@@ -81,10 +81,14 @@ def get_dataloaders(config, train_transform, val_transform, preprocess, frac_num
     # train_csv = data_root_dir + f'csvs/miccai_nj/train_{frac_num}.csv'
     # val_csv = data_root_dir + f'csvs/miccai_nj/val_{frac_num}.csv'
     # test_csv = data_root_dir + 'csvs/miccai_nj/test_bb.csv'
-    train_csv = data_root_dir + f'csvs/train_{frac_num}.csv'
-    val_csv = data_root_dir + f'csvs/val_{frac_num}.csv'
-    # val_csv = data_root_dir + f'csvs/val_100.csv'
-    test_csv = data_root_dir + 'csvs/test_bb.csv'
+    # cahnging this UPA!!!
+    # train_csv = data_root_dir + f'csvs/train_{frac_num}.csv'
+    # val_csv = data_root_dir + f'csvs/val_{frac_num}.csv'
+    # # val_csv = data_root_dir + f'csvs/val_100.csv'
+    # test_csv = data_root_dir + 'csvs/test_bb.csv'
+    train_csv = data_root_dir + 'csvs/train.csv'
+    val_csv = data_root_dir + 'csvs/val.csv'
+    test_csv = data_root_dir + 'csvs/test.csv'
 
     # get column names
     # TODO: fix hardcode?

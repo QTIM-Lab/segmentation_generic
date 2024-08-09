@@ -51,11 +51,18 @@ def infer_model(config_augmentations_path, holdout_csv_path, weights_path, model
         'sgd_momentum': 0.1
     }
 
-    model = SegmentationMedSAM.load_from_checkpoint(
-        checkpoint_path=weights_path,
-        map_location=device,
+    # model = SegmentationMedSAM.load_from_checkpoint(
+    #     checkpoint_path=weights_path,
+    #     map_location=device,
+    #     configs=dict(configs),
+    #     num_classes=1,
+    #     preprocessor=preprocess
+    # )
+    
+    
+    model = SegmentationMedSAM(
         configs=dict(configs),
-        num_classes=1,
+        # num_classes=1,
         preprocessor=preprocess
     )
 
