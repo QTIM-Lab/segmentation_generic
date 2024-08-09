@@ -28,6 +28,6 @@ adamw_weight_decay: {'max': 0.01, 'min': 0.0000001, 'distribution': 'log_uniform
 sgd_momentum: {'max': 0.99, 'min': 0.01, 'distribution': 'log_uniform'}
 log_every_n_steps: {'values': [10]}
 # Frac num
-frac_num: {'values': [20]}
+frac_num: {'values': [80]}
 # label options (label, image, padded_label, yolo)
 label_bbox_option: {'values': ['image']}

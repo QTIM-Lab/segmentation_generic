@@ -1,4 +1,4 @@
 data_dir: '/sddata/data/geographic_atrophy/nj_110/'
-output_dir: '/sddata/projects/segmentation_ga/wandb_outputs/output_logger/'
+output_dir: '/sddata/data/geographic_atrophy/output_logger/'
 num_workers: 8
 gpu_max_batch_size: 1

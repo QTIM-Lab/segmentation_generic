@@ -1,5 +1,7 @@
 from transformers import SamModel
 from monai.losses.dice import DiceLoss
+from monai.metrics.meandice import DiceMetric
+
 
 from src.segmentation.generic.models.models_generic import GenericModel
 
@@ -13,7 +15,6 @@ class SegmentationMedSAM(GenericModel):
 
         self.model = SamModel.from_pretrained("flaviagiammarino/medsam-vit-base")
         self.preprocessor = preprocessor
-        self.metric = DiceLoss(sigmoid=False, squared_pred=True, reduction="mean")
 
     # will be used during inference
     def forward(self, x):
@@ -45,5 +46,6 @@ class SegmentationMedSAM(GenericModel):
 
         loss = self.metric(probs, mask_labels.cpu())
         metric_value = 1 - loss.item()
+        # metric_value = self.
 
         return loss, metric_value
