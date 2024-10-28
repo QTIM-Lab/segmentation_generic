@@ -47,6 +47,8 @@ Thumbs.db
 # Weights and biases
 wandb/
 
+lightning_logs/
+
 # Other
 # yamls/
 # scripts/run

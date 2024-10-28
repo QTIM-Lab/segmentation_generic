@@ -12,7 +12,7 @@ from src.segmentation.generic.utils.utils_train import (
     get_segmentation_callback,
     get_sweep_config
 )
-
+from src.segmentation.generic.utils.attribute_dict import AttributeDict
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Segmentation")
@@ -26,77 +26,77 @@ def parse_args():
 
 
 def train_model(config=None):
-    with wandb.init():
-        config = wandb.config  # I think this is {...parameters}
+    # with wandb.init():
+    # config = wandb.config  # I think this is {...parameters}
 
-        print('using: ', config.frac_num)
-        # config.method
+    # print('using: ', config.frac_num)
+    # config.method
 
-        # Initialize Augmentations
-        with open(config.augmentations, 'r') as file:
-            augmentation_params = yaml.safe_load(file)
-        train_transform, val_transform = get_train_and_val_transform(augmentation_params)
+    # Initialize Augmentations
+    with open(config.augmentations, 'r') as file:
+        augmentation_params = yaml.safe_load(file)
+    train_transform, val_transform = get_train_and_val_transform(augmentation_params)
 
-        # Initialize Model and Processor (preprocessor?)
-        model, preprocess = get_model_and_processor(config)
+    # Initialize Model and Processor (preprocessor?)
+    model, preprocess = get_model_and_processor(config)
 
-        # Get dataset
-        train_dataloader, val_dataloader, test_dataloader = get_dataloaders(
-            config=config,
-            train_transform=train_transform,
-            val_transform=val_transform,
-            preprocess=preprocess,
-            frac_num=config.frac_num
-        )
+    # Get dataset
+    train_dataloader, val_dataloader, test_dataloader = get_dataloaders(
+        config=config,
+        train_transform=train_transform,
+        val_transform=val_transform,
+        preprocess=preprocess,
+        frac_num=config.frac_num
+    )
 
-        # and first n batches for callback function that needs them
-        first_n_batches = get_first_n_batches(input_dataloader=val_dataloader, n=10)
+    # and first n batches for callback function that needs them
+    # first_n_batches = get_first_n_batches(input_dataloader=val_dataloader, n=10)
 
-        # Initialize Callbacks
-        segmentation_callback = get_segmentation_callback(
-            model_arch=config.model_arch,
-            batches=first_n_batches,
-            processor=preprocess
-        )
-        early_stop_callback = pl.callbacks.EarlyStopping(monitor=config.early_stopping_monitor, patience=config.patience)
-        checkpoint_callback = pl.callbacks.ModelCheckpoint()
-        lr_monitor = pl.callbacks.LearningRateMonitor(logging_interval='epoch')
+    # Initialize Callbacks
+    # segmentation_callback = get_segmentation_callback(
+    #     model_arch=config.model_arch,
+    #     batches=first_n_batches,
+    #     processor=preprocess
+    # )
+    early_stop_callback = pl.callbacks.EarlyStopping(monitor=config.early_stopping_monitor, patience=config.patience)
+    checkpoint_callback = pl.callbacks.ModelCheckpoint()
+    lr_monitor = pl.callbacks.LearningRateMonitor(logging_interval='epoch')
 
-        # Get the run id
-        wandb_run = wandb.run
-        wandb_run_id = str(wandb_run.id) if wandb_run else 'tmp'
+    # Get the run id
+    # wandb_run = wandb.run
+    # wandb_run_id = str(wandb_run.id) if wandb_run else 'tmp'
 
-        # Initialize wandb logger
-        wandb_logger = WandbLogger(
-            project='wandb-lightning',
-            job_type='train',
-            # log_model='all',
-            save_dir=config.output_dir + wandb_run_id
-        )
+    # Initialize wandb logger
+    # wandb_logger = WandbLogger(
+    #     project='wandb-lightning',
+    #     job_type='train',
+    #     # log_model='all',
+    #     save_dir=config.output_dir + wandb_run_id
+    # )
 
-        # log gradients, parameter histogram and model topology
-        wandb_logger.watch(model, log="all")
+    # log gradients, parameter histogram and model topology
+    # wandb_logger.watch(model, log="all")
 
-        # Initialize a trainer
-        trainer = pl.Trainer(
-            max_epochs=config.max_epochs,
-            logger=wandb_logger,
-            callbacks=[early_stop_callback, segmentation_callback, checkpoint_callback, lr_monitor],
-            devices=[config.gpu_id],
-            accelerator='gpu',
-            log_every_n_steps=config.log_every_n_steps,
-            accumulate_grad_batches=config.batch_size//config.gpu_max_batch_size,
-            gradient_clip_val=config.grad_clip_val
-        )
+    # Initialize a trainer
+    trainer = pl.Trainer(
+        max_epochs=config.max_epochs,
+        # logger=wandb_logger,
+        callbacks=[early_stop_callback, checkpoint_callback, lr_monitor],
+        devices=[config.gpu_id],
+        accelerator='gpu',
+        log_every_n_steps=config.log_every_n_steps,
+        accumulate_grad_batches=config.batch_size//config.gpu_max_batch_size,
+        gradient_clip_val=config.grad_clip_val
+    )
 
-        # Run training
-        trainer.fit(model, train_dataloader, val_dataloader)
+    # Run training
+    trainer.fit(model, train_dataloader, val_dataloader)
 
-        # Evaluate the model on the test set
-        trainer.test(dataloaders=test_dataloader)
+    # Evaluate the model on the test set
+    trainer.test(dataloaders=test_dataloader)
 
-        # Clean up
-        wandb.finish()
+    # Clean up
+    # wandb.finish()
 
 
 if __name__ == '__main__':
@@ -119,5 +119,11 @@ if __name__ == '__main__':
         gpu_id=gpu_id
     )
 
-    sweep_id = wandb.sweep(sweep_config, project=train_params['wb_project'])
-    wandb.agent(sweep_id=sweep_id, function=train_model, count=train_params['sweep_count'])
+    # sweep_id = wandb.sweep(sweep_config, project=train_params['wb_project'])
+    # wandb.agent(sweep_id=sweep_id, function=train_model, count=train_params['sweep_count'])
+    print('dfdfdf')
+    print(sweep_config['parameters'])
+    sweep_config_attr = AttributeDict(sweep_config['parameters'])
+    print(sweep_config_attr.frac_num)
+    # exit(0)
+    train_model(config=sweep_config_attr)

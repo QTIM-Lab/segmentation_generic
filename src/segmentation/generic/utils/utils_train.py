@@ -22,14 +22,16 @@ def get_model_and_processor(config):
     if config.model_arch == 'mask2former':
         preprocess = MaskFormerImageProcessor(ignore_index=0, do_reduce_labels=False, do_resize=False, do_rescale=False, do_normalize=False)
         model = SegmentationMask2Former(
-            configs=dict(config),
+            # configs=dict(config),
+            configs=config.to_dict(),
             num_classes=1,
             preprocessor=preprocess
         )
     elif config.model_arch == 'medsam':
         preprocess = SamProcessor.from_pretrained("flaviagiammarino/medsam-vit-base")
         model = SegmentationMedSAM(
-            configs=dict(config),
+            # configs=dict(config),
+            configs=config.to_dict(),
             preprocessor=preprocess
         )
 
@@ -77,9 +79,9 @@ def get_dataloaders(config, train_transform, val_transform, preprocess, frac_num
     image_root_dir = data_root_dir + 'images'
     label_root_dir = data_root_dir + 'labels'
     # get csvs
-    train_csv = data_root_dir + f'csvs/miccai_nj/train_{frac_num}.csv'
-    val_csv = data_root_dir + f'csvs/miccai_nj/val_{frac_num}.csv'
-    test_csv = data_root_dir + 'csvs/miccai_nj/test_bb.csv'
+    train_csv = data_root_dir + f'csvs/train.csv'
+    val_csv = data_root_dir + f'csvs/val.csv'
+    test_csv = data_root_dir + 'csvs/test.csv'
 
     # get column names
     # TODO: fix hardcode?
@@ -170,7 +172,7 @@ def get_sweep_config(model_arch, train_params, system_params, gpu_id):
         },
         'parameters': {
             # Parameters (Model arch)
-            'model_arch': {'values': [model_arch]},
+            'model_arch': model_arch,
             # Frac num
             'frac_num': train_params['frac_num'],
             # Hyperparameters (ones with log need manual setting)
@@ -188,22 +190,28 @@ def get_sweep_config(model_arch, train_params, system_params, gpu_id):
             'early_stopping_monitor': train_params['early_stopping_monitor'],
             'optimizer_name': train_params['optimizer_name'],
             'scheduler_name': train_params['scheduler_name'],
+            # 'adamw_weight_decay': {
+            #     'max': math.log(train_params['adamw_weight_decay']['max']),
+            #     'min': math.log(train_params['adamw_weight_decay']['min']),
+            #     'distribution': train_params['adamw_weight_decay']['distribution']
+            # },
             'adamw_weight_decay': {
-                'max': math.log(train_params['adamw_weight_decay']['max']),
-                'min': math.log(train_params['adamw_weight_decay']['min']),
-                'distribution': train_params['adamw_weight_decay']['distribution']
+                train_params['adamw_weight_decay']
             },
+            # 'sgd_momentum': {
+            #     'max': math.log(train_params['sgd_momentum']['max']),
+            #     'min': math.log(train_params['sgd_momentum']['min']),
+            #     'distribution': train_params['sgd_momentum']['distribution']
+            # },
             'sgd_momentum': {
-                'max': math.log(train_params['sgd_momentum']['max']),
-                'min': math.log(train_params['sgd_momentum']['min']),
-                'distribution': train_params['sgd_momentum']['distribution']
+                train_params['sgd_momentum']
             },
             'log_every_n_steps': train_params['log_every_n_steps'],
             # System
-            'data_dir': {'values': [system_params['data_dir']]},
-            'output_dir': {'values': [system_params['output_dir']]},
-            'num_workers': {'values': [system_params['num_workers']]},
-            'gpu_max_batch_size': {'values': [system_params['gpu_max_batch_size']]},
-            'gpu_id': {'values': [gpu_id]},
+            'data_dir': system_params['data_dir'],
+            'output_dir': system_params['output_dir'],
+            'num_workers': system_params['num_workers'],
+            'gpu_max_batch_size': system_params['gpu_max_batch_size'],
+            'gpu_id': gpu_id,
         },
     }
